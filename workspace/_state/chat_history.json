@@ -1,0 +1,50 @@
+[
+  {
+    "role": "human",
+    "content": "你好"
+  },
+  {
+    "role": "manager",
+    "content": "你好！有什么需求需要我安排团队处理？前端、后端、测试，或者全栈都行，直接说。"
+  },
+  {
+    "role": "human",
+    "content": "创建一个简单的Hello World页面，只需要前端"
+  },
+  {
+    "role": "manager",
+    "content": "简单明了，一个 Hello World 页面，只派前端。"
+  },
+  {
+    "role": "human",
+    "content": "你好"
+  },
+  {
+    "role": "manager",
+    "content": "你好！上次说的 Hello World 页面我这就派给前端，马上动手。"
+  },
+  {
+    "role": "human",
+    "content": "终止任务"
+  },
+  {
+    "role": "manager",
+    "content": "好的，Hello World 页面任务已终止。有新需求随时说。"
+  },
+  {
+    "role": "human",
+    "content": "请只派前端开发AI，创建一个About页面，包含公司简介和团队介绍两段文字"
+  },
+  {
+    "role": "manager",
+    "content": "好的，About 页面，纯前端任务，只派前端开发 AI。"
+  },
+  {
+    "role": "human",
+    "content": "你好"
+  },
+  {
+    "role": "manager",
+    "content": "好的，About 页面需求已经明确，直接派活给前端。"
+  }
+]

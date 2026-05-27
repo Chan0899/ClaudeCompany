@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>多Claude协同系统 Demo</title>
+    <link rel="stylesheet" href="/static/css/style.css">
+</head>
+<body>
+
+<!-- ===== 顶部标题栏 ===== -->
+<header class="topbar">
+    <div class="topbar-title">
+        <span class="logo-icon">🏢</span>
+        <h1>多Claude协同系统 Demo</h1>
+        <span class="badge">v1.0</span>
+    </div>
+    <div class="topbar-actions">
+        <span class="status-dot" id="sysStatus"></span>
+        <span id="sysStatusText">系统运行中</span>
+        <button class="btn-reset" onclick="resetSystem()" title="重置系统">↻ 重置</button>
+    </div>
+</header>
+
+<!-- ===== 主布局: 左面板(AI终端) + 右面板(交互区) ===== -->
+<div class="main-container">
+
+    <!-- ========== 左面板: AI终端状态 ========== -->
+    <aside class="panel-left" id="panelLeft">
+        <div class="panel-header">
+            <h2>🤖 AI终端状态</h2>
+        </div>
+
+        <!-- AI状态卡片区 -->
+        <div class="ai-cards" id="aiCards">
+            <!-- 由JS动态渲染 -->
+        </div>
+
+        <!-- 实时日志区 -->
+        <div class="log-section">
+            <div class="log-header">
+                <h3>📋 实时日志</h3>
+                <button class="btn-clear" onclick="clearLogs()">清空</button>
+            </div>
+            <div class="log-stream" id="logStream">
+                <div class="log-entry system">
+                    <span class="log-time">--:--:--</span>
+                    <span class="log-msg">等待系统事件...</span>
+                </div>
+            </div>
+        </div>
+    </aside>
+
+    <!-- ========== 右面板: 人类交互区 ========== -->
+    <main class="panel-right" id="panelRight">
+
+        <!-- Tab导航 -->
+        <nav class="tab-nav">
+            <button class="tab-btn active" data-tab="chat">💬 对话</button>
+            <button class="tab-btn" data-tab="tasks">📋 任务</button>
+            <button class="tab-btn" data-tab="code">📁 代码</button>
+        </nav>
+
+        <!-- Tab: 对话 -->
+        <section class="tab-content active" id="tab-chat">
+            <div class="chat-messages" id="chatMessages">
+                <div class="chat-msg manager">
+                    <div class="msg-sender">🤖 管理AI</div>
+                    <div class="msg-body">你好! 我是管理AI, 请提交你的开发需求, 我会拆解并分配给执行AI团队处理。</div>
+                </div>
+            </div>
+            <div class="chat-input-area">
+                <input type="text" id="chatInput"
+                       placeholder="输入开发需求, 例如: 创建一个登录页面..."
+                       onkeydown="if(event.key==='Enter')sendChat()">
+                <button class="btn-send" onclick="sendChat()">发送 →</button>
+            </div>
+            <div class="quick-actions">
+                <span>快捷需求:</span>
+                <button onclick="quickTask('创建一个用户登录页面')">登录页</button>
+                <button onclick="quickTask('开发数据管理列表页面和API接口')">数据管理</button>
+                <button onclick="quickTask('构建用户注册功能前后端')">用户注册</button>
+            </div>
+        </section>
+
+        <!-- Tab: 任务 -->
+        <section class="tab-content" id="tab-tasks">
+            <div class="task-list" id="taskList">
+                <div class="task-empty">暂无任务, 请在对话中提交需求</div>
+            </div>
+        </section>
+
+        <!-- Tab: 代码 -->
+        <section class="tab-content" id="tab-code">
+            <div class="code-layout">
+                <div class="file-tree" id="fileTree">
+                    <div class="file-tree-empty">暂无文件</div>
+                </div>
+                <div class="code-viewer" id="codeViewer">
+                    <div class="code-placeholder">
+                        <span class="code-icon">📄</span>
+                        <p>选择左侧文件查看代码</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+</div>
+
+<script src="/static/js/app.js"></script>
+</body>
+</html>

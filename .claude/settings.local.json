@@ -1,0 +1,24 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(python -c ' *)",
+      "Bash(timeout 8 python app.py)",
+      "Bash(python app.py)",
+      "Bash(curl -s http://127.0.0.1:5000/api/status)",
+      "Bash(python -m json.tool)",
+      "Bash(curl -s -X POST http://127.0.0.1:5000/api/chat -H \"Content-Type: application/json\" -d '{\"message\":\"创建一个登录页面\"}')",
+      "Bash(python -c \"import sys,json; d=json.load\\(sys.stdin\\); print\\('Tasks:', len\\(d['tasks']\\)\\); [print\\(f' [{t[\\\\\"id\\\\\"]}] {t[\\\\\"description\\\\\"]} -> {t[\\\\\"status\\\\\"]}'\\) for t in d['tasks']]\")",
+      "Bash(pkill -f \"python app.py\")",
+      "Bash(claude -p \"Read test.txt and tell me what it says\")",
+      "Bash(tasklist /FI \"IMAGENAME eq powershell.exe\")",
+      "Bash(tasklist)",
+      "Bash(taskkill /F /IM powershell.exe)",
+      "Bash(python -c \"import sys,json; d=json.load\\(sys.stdin\\); print\\(f'Server OK, {len\\(d[\\\\\"ai_list\\\\\"]\\)} AIs, mode=claude'\\)\")",
+      "Bash(rm -f workspace/frontend/hello.html workspace/frontend/test.txt workspace/frontend/_TASK.md workspace/frontend/_launch_*.ps1 workspace/backend/_TASK.md workspace/backend/_launch_*.ps1 workspace/tests/_TASK.md workspace/tests/_launch_*.ps1 workspace/manager/_TASK.md workspace/manager/_launch_*.ps1)",
+      "Bash(rm -rf workspace/frontend/* workspace/backend/* workspace/tests/* workspace/_board/* workspace/_state/*)",
+      "Bash(git init *)",
+      "Bash(git add *)",
+      "Bash(git commit -m ' *)"
+    ]
+  }
+}

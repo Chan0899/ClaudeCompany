@@ -1,0 +1,38 @@
+[
+  {
+    "id": "5ae79f7c",
+    "description": "创建 About 页面 (about.html)，包含以下内容：1) 页面标题 \"About Us\"；2) \"公司简介\" 段落 — 写一段通用的科技公司简介文字（约100-150字）；3) \"团队介绍\" 段落 — 写一段团队介绍文字（约100-150字）。要求：响应式布局，风格简洁专业，纯HTML/CSS实现，无需JS框架。",
+    "assigned_role": "frontend_dev",
+    "parent_id": "37608511",
+    "depends_on": [],
+    "status": "done",
+    "result": {
+      "files": [
+        "about.html"
+      ],
+      "role": "frontend_dev"
+    },
+    "reject_reason": null,
+    "created_at": 1779822050.054888,
+    "completed_at": 1779822083.9231887
+  },
+  {
+    "id": "37608511",
+    "description": "你好",
+    "assigned_role": null,
+    "parent_id": null,
+    "depends_on": [],
+    "status": "approved",
+    "result": {
+      "frontend_dev": {
+        "files": [
+          "about.html"
+        ],
+        "role": "frontend_dev"
+      }
+    },
+    "reject_reason": null,
+    "created_at": 1779822050.0488875,
+    "completed_at": null
+  }
+]

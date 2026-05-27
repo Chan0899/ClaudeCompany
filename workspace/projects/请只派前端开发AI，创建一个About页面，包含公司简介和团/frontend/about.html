@@ -1,0 +1,597 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>About Us — ClaudeCompany</title>
+    <style>
+        /* ===== CSS Variables ===== */
+        :root {
+            --color-bg: #faf9f7;
+            --color-surface: #ffffff;
+            --color-text: #1a1a2e;
+            --color-text-secondary: #555770;
+            --color-primary: #4f46e5;
+            --color-primary-light: #e0e7ff;
+            --color-accent: #f59e0b;
+            --color-border: #e5e7eb;
+            --color-team-card-bg: #f8f7ff;
+            --radius: 12px;
+            --radius-lg: 20px;
+            --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.05);
+            --shadow-md: 0 4px 24px rgba(0, 0, 0, 0.08);
+            --shadow-lg: 0 12px 40px rgba(0, 0, 0, 0.1);
+            --max-width: 1100px;
+            --transition: 0.25s ease;
+        }
+
+        /* ===== Reset & Base ===== */
+        *,
+        *::before,
+        *::after {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        html {
+            scroll-behavior: smooth;
+        }
+
+        body {
+            font-family: "Inter", "Segoe UI", system-ui, -apple-system, sans-serif;
+            background: var(--color-bg);
+            color: var(--color-text);
+            line-height: 1.7;
+            -webkit-font-smoothing: antialiased;
+        }
+
+        /* Decorative background blobs */
+        body::before {
+            content: "";
+            position: fixed;
+            top: -20%;
+            left: -10%;
+            width: 40vw;
+            height: 40vw;
+            background: radial-gradient(circle, rgba(79, 70, 229, 0.06) 0%, transparent 70%);
+            border-radius: 50%;
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        body::after {
+            content: "";
+            position: fixed;
+            bottom: -15%;
+            right: -8%;
+            width: 35vw;
+            height: 35vw;
+            background: radial-gradient(circle, rgba(245, 158, 11, 0.05) 0%, transparent 70%);
+            border-radius: 50%;
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        /* ===== Navigation ===== */
+        .nav {
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            background: rgba(250, 249, 247, 0.85);
+            backdrop-filter: blur(12px);
+            border-bottom: 1px solid var(--color-border);
+        }
+
+        .nav-inner {
+            max-width: var(--max-width);
+            margin: 0 auto;
+            padding: 14px 24px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .nav-logo {
+            font-size: 1.25rem;
+            font-weight: 700;
+            color: var(--color-primary);
+            text-decoration: none;
+            letter-spacing: -0.02em;
+        }
+
+        .nav-links {
+            display: flex;
+            gap: 28px;
+            list-style: none;
+        }
+
+        .nav-links a {
+            text-decoration: none;
+            color: var(--color-text-secondary);
+            font-size: 0.925rem;
+            font-weight: 500;
+            transition: color var(--transition);
+        }
+
+        .nav-links a:hover {
+            color: var(--color-primary);
+        }
+
+        /* ===== Page Header ===== */
+        .page-header {
+            position: relative;
+            z-index: 1;
+            text-align: center;
+            padding: 72px 24px 48px;
+        }
+
+        .page-header .eyebrow {
+            display: inline-block;
+            font-size: 0.8rem;
+            font-weight: 600;
+            letter-spacing: 0.08em;
+            text-transform: uppercase;
+            color: var(--color-primary);
+            background: var(--color-primary-light);
+            padding: 6px 16px;
+            border-radius: 100px;
+            margin-bottom: 16px;
+        }
+
+        .page-header h1 {
+            font-size: clamp(2.2rem, 5vw, 3.4rem);
+            font-weight: 800;
+            letter-spacing: -0.03em;
+            line-height: 1.15;
+            margin-bottom: 12px;
+        }
+
+        .page-header h1 span {
+            color: var(--color-primary);
+        }
+
+        .page-header .subtitle {
+            font-size: 1.1rem;
+            color: var(--color-text-secondary);
+            max-width: 560px;
+            margin: 0 auto;
+        }
+
+        /* ===== Section Common ===== */
+        .section {
+            position: relative;
+            z-index: 1;
+            max-width: var(--max-width);
+            margin: 0 auto 64px;
+            padding: 0 24px;
+        }
+
+        .section-header {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            margin-bottom: 32px;
+        }
+
+        .section-icon {
+            width: 44px;
+            height: 44px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.3rem;
+            flex-shrink: 0;
+        }
+
+        .section-icon.company {
+            background: #e0e7ff;
+            color: #4f46e5;
+        }
+
+        .section-icon.team {
+            background: #fef3c7;
+            color: #d97706;
+        }
+
+        .section-header h2 {
+            font-size: 1.6rem;
+            font-weight: 700;
+            letter-spacing: -0.02em;
+        }
+
+        /* ===== Company Introduction ===== */
+        .company-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 32px;
+            align-items: start;
+        }
+
+        .company-card {
+            background: var(--color-surface);
+            border: 1px solid var(--color-border);
+            border-radius: var(--radius-lg);
+            padding: 36px;
+            box-shadow: var(--shadow-sm);
+            transition: box-shadow var(--transition), transform var(--transition);
+        }
+
+        .company-card:hover {
+            box-shadow: var(--shadow-md);
+            transform: translateY(-2px);
+        }
+
+        .company-card h3 {
+            font-size: 1.15rem;
+            font-weight: 700;
+            margin-bottom: 14px;
+            color: var(--color-primary);
+        }
+
+        .company-card p {
+            color: var(--color-text-secondary);
+            font-size: 0.95rem;
+            line-height: 1.75;
+        }
+
+        .company-card.full-width {
+            grid-column: 1 / -1;
+        }
+
+        /* Values / stats row */
+        .stats-row {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 20px;
+            margin-top: 40px;
+        }
+
+        .stat-item {
+            text-align: center;
+            padding: 24px 16px;
+            background: var(--color-bg);
+            border-radius: var(--radius);
+        }
+
+        .stat-number {
+            display: block;
+            font-size: 2rem;
+            font-weight: 800;
+            color: var(--color-primary);
+            letter-spacing: -0.02em;
+        }
+
+        .stat-label {
+            font-size: 0.85rem;
+            color: var(--color-text-secondary);
+            margin-top: 4px;
+        }
+
+        /* ===== Team Introduction ===== */
+        .team-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+            gap: 24px;
+        }
+
+        .team-card {
+            background: var(--color-surface);
+            border: 1px solid var(--color-border);
+            border-radius: var(--radius-lg);
+            padding: 32px 24px;
+            text-align: center;
+            box-shadow: var(--shadow-sm);
+            transition: box-shadow var(--transition), transform var(--transition);
+        }
+
+        .team-card:hover {
+            box-shadow: var(--shadow-md);
+            transform: translateY(-3px);
+        }
+
+        .team-avatar {
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            margin: 0 auto 16px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.8rem;
+            font-weight: 700;
+            color: #fff;
+        }
+
+        .team-avatar.av1 { background: linear-gradient(135deg, #4f46e5, #7c3aed); }
+        .team-avatar.av2 { background: linear-gradient(135deg, #059669, #10b981); }
+        .team-avatar.av3 { background: linear-gradient(135deg, #d97706, #f59e0b); }
+        .team-avatar.av4 { background: linear-gradient(135deg, #dc2626, #f43f5e); }
+        .team-avatar.av5 { background: linear-gradient(135deg, #0891b2, #06b6d4); }
+        .team-avatar.av6 { background: linear-gradient(135deg, #7c3aed, #a855f7); }
+
+        .team-card .name {
+            font-size: 1.05rem;
+            font-weight: 700;
+        }
+
+        .team-card .role {
+            font-size: 0.85rem;
+            color: var(--color-primary);
+            font-weight: 500;
+            margin-top: 2px;
+        }
+
+        .team-card .bio {
+            font-size: 0.88rem;
+            color: var(--color-text-secondary);
+            margin-top: 10px;
+            line-height: 1.6;
+        }
+
+        /* Culture banner */
+        .culture-banner {
+            margin-top: 40px;
+            background: linear-gradient(135deg, #4f46e5, #7c3aed);
+            color: #fff;
+            border-radius: var(--radius-lg);
+            padding: 40px 36px;
+            box-shadow: var(--shadow-lg);
+        }
+
+        .culture-banner h3 {
+            font-size: 1.3rem;
+            font-weight: 700;
+            margin-bottom: 10px;
+        }
+
+        .culture-banner p {
+            font-size: 0.95rem;
+            opacity: 0.9;
+            line-height: 1.7;
+            max-width: 640px;
+        }
+
+        /* ===== Footer ===== */
+        .footer {
+            position: relative;
+            z-index: 1;
+            text-align: center;
+            padding: 32px 24px;
+            border-top: 1px solid var(--color-border);
+            color: var(--color-text-secondary);
+            font-size: 0.85rem;
+        }
+
+        /* ===== Responsive ===== */
+        @media (max-width: 768px) {
+            .nav-links {
+                gap: 16px;
+            }
+
+            .page-header {
+                padding: 48px 20px 36px;
+            }
+
+            .company-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .stats-row {
+                grid-template-columns: 1fr;
+            }
+
+            .team-grid {
+                grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+                gap: 16px;
+            }
+
+            .team-card {
+                padding: 24px 16px;
+            }
+
+            .culture-banner {
+                padding: 28px 24px;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .team-grid {
+                grid-template-columns: 1fr 1fr;
+                gap: 12px;
+            }
+
+            .team-avatar {
+                width: 56px;
+                height: 56px;
+                font-size: 1.3rem;
+            }
+
+            .company-card {
+                padding: 24px;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Navigation -->
+    <nav class="nav">
+        <div class="nav-inner">
+            <a href="#" class="nav-logo">ClaudeCompany</a>
+            <ul class="nav-links">
+                <li><a href="#">Home</a></li>
+                <li><a href="#company">Company</a></li>
+                <li><a href="#team">Team</a></li>
+                <li><a href="#">Contact</a></li>
+            </ul>
+        </div>
+    </nav>
+
+    <!-- Page Header -->
+    <header class="page-header">
+        <span class="eyebrow">About Us</span>
+        <h1>Building the <span>Future</span>, Together</h1>
+        <p class="subtitle">
+            We are a team of passionate creators dedicated to delivering exceptional digital experiences
+            that empower businesses worldwide.
+        </p>
+    </header>
+
+    <!-- Company Introduction -->
+    <section class="section" id="company">
+        <div class="section-header">
+            <div class="section-icon company">&#9733;</div>
+            <h2>Company Introduction</h2>
+        </div>
+
+        <div class="company-grid">
+            <!-- Card: Background -->
+            <div class="company-card">
+                <h3>Our Story</h3>
+                <p>
+                    Founded in 2020, ClaudeCompany began with a simple idea: harness the power of
+                    artificial intelligence to solve real-world business challenges. What started as a
+                    small team of three engineers working from a garage has grown into a dynamic
+                    organization of over 80 talented professionals across three continents.
+                </p>
+            </div>
+
+            <!-- Card: Vision -->
+            <div class="company-card">
+                <h3>Our Vision</h3>
+                <p>
+                    We envision a world where cutting-edge technology is accessible to every
+                    organization, regardless of size. By democratizing AI and building intuitive
+                    platforms, we aim to level the playing field and enable businesses to compete
+                    and thrive in the digital economy.
+                </p>
+            </div>
+
+            <!-- Card: Core Business (full width) -->
+            <div class="company-card full-width">
+                <h3>Core Business</h3>
+                <p>
+                    We specialize in enterprise-grade AI solutions, cloud-native application
+                    development, and digital transformation consulting. Our flagship platform
+                    empowers companies to automate workflows, extract insights from data, and
+                    deliver personalized customer experiences at scale. From startups to Fortune
+                    500 enterprises, our technology stack adapts to the unique needs of every
+                    client.
+                </p>
+
+                <!-- Stats Row -->
+                <div class="stats-row">
+                    <div class="stat-item">
+                        <span class="stat-number">80+</span>
+                        <span class="stat-label">Team Members</span>
+                    </div>
+                    <div class="stat-item">
+                        <span class="stat-number">200+</span>
+                        <span class="stat-label">Projects Delivered</span>
+                    </div>
+                    <div class="stat-item">
+                        <span class="stat-number">15</span>
+                        <span class="stat-label">Countries Served</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Team Introduction -->
+    <section class="section" id="team">
+        <div class="section-header">
+            <div class="section-icon team">&#9822;</div>
+            <h2>Team Introduction</h2>
+        </div>
+
+        <div class="team-grid">
+            <!-- Member 1 -->
+            <div class="team-card">
+                <div class="team-avatar av1">AK</div>
+                <div class="name">Alice Kim</div>
+                <div class="role">CEO & Co-Founder</div>
+                <p class="bio">
+                    Former Google AI researcher with 12 years of experience in machine learning and
+                    distributed systems. Alice drives the company's strategic vision.
+                </p>
+            </div>
+
+            <!-- Member 2 -->
+            <div class="team-card">
+                <div class="team-avatar av2">MR</div>
+                <div class="name">Marcus Rivera</div>
+                <div class="role">CTO & Co-Founder</div>
+                <p class="bio">
+                    Full-stack architect and open-source contributor. Marcus leads the engineering
+                    team and oversees the technical roadmap.
+                </p>
+            </div>
+
+            <!-- Member 3 -->
+            <div class="team-card">
+                <div class="team-avatar av3">SL</div>
+                <div class="name">Sarah Lin</div>
+                <div class="role">VP of Product</div>
+                <p class="bio">
+                    Product strategist with a background in UX research. Sarah ensures every
+                    feature we ship solves a genuine user need.
+                </p>
+            </div>
+
+            <!-- Member 4 -->
+            <div class="team-card">
+                <div class="team-avatar av4">DJ</div>
+                <div class="name">David Johnson</div>
+                <div class="role">Head of Design</div>
+                <p class="bio">
+                    Award-winning designer who believes that great interfaces are invisible.
+                    David shapes our design system and brand identity.
+                </p>
+            </div>
+
+            <!-- Member 5 -->
+            <div class="team-card">
+                <div class="team-avatar av5">EP</div>
+                <div class="name">Elena Petrova</div>
+                <div class="role">Lead Engineer</div>
+                <p class="bio">
+                    DevOps and cloud infrastructure specialist. Elena keeps our systems fast,
+                    secure, and highly available around the clock.
+                </p>
+            </div>
+
+            <!-- Member 6 -->
+            <div class="team-card">
+                <div class="team-avatar av6">JC</div>
+                <div class="name">James Chen</div>
+                <div class="role">Data Science Lead</div>
+                <p class="bio">
+                    PhD in computational statistics. James transforms raw data into actionable
+                    intelligence for our clients.
+                </p>
+            </div>
+        </div>
+
+        <!-- Culture Banner -->
+        <div class="culture-banner">
+            <h3>Our Collaboration Culture</h3>
+            <p>
+                We believe that the best ideas emerge when diverse minds work together in an
+                environment of trust and mutual respect. We practice radical transparency,
+                celebrate thoughtful disagreement, and prioritize learning over perfection.
+                Every voice matters here — juniors challenge seniors, designers pair with
+                engineers, and curiosity is never turned away.
+            </p>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <p>&copy; 2026 ClaudeCompany. All rights reserved.</p>
+    </footer>
+
+</body>
+</html>

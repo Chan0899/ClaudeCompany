@@ -1,0 +1,291 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>About Us - TechNova</title>
+    <style>
+        /* ===== Reset & Base ===== */
+        *, *::before, *::after {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans SC", sans-serif;
+            color: #1a1a2e;
+            background-color: #f8f9fa;
+            line-height: 1.7;
+        }
+
+        /* ===== Navigation ===== */
+        .navbar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0 2rem;
+            height: 64px;
+            background: #ffffff;
+            border-bottom: 1px solid #e8e8e8;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .navbar .logo {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: #2d3436;
+            text-decoration: none;
+            letter-spacing: -0.5px;
+        }
+
+        .navbar .logo span {
+            color: #0984e3;
+        }
+
+        .nav-links {
+            list-style: none;
+            display: flex;
+            gap: 2rem;
+        }
+
+        .nav-links a {
+            text-decoration: none;
+            color: #636e72;
+            font-size: 0.95rem;
+            font-weight: 500;
+            transition: color 0.2s;
+        }
+
+        .nav-links a:hover,
+        .nav-links a.active {
+            color: #0984e3;
+        }
+
+        /* ===== Hero Banner ===== */
+        .hero {
+            background: linear-gradient(135deg, #0984e3 0%, #6c5ce7 100%);
+            color: #ffffff;
+            text-align: center;
+            padding: 5rem 2rem;
+        }
+
+        .hero h1 {
+            font-size: 3rem;
+            font-weight: 800;
+            letter-spacing: -1px;
+            margin-bottom: 0.75rem;
+        }
+
+        .hero p {
+            font-size: 1.15rem;
+            opacity: 0.9;
+            max-width: 500px;
+            margin: 0 auto;
+        }
+
+        /* ===== Content Sections ===== */
+        .container {
+            max-width: 960px;
+            margin: 0 auto;
+            padding: 4rem 1.5rem;
+        }
+
+        .section {
+            margin-bottom: 3rem;
+        }
+
+        .section:last-child {
+            margin-bottom: 0;
+        }
+
+        .section-title {
+            font-size: 1.75rem;
+            font-weight: 700;
+            color: #2d3436;
+            margin-bottom: 1.25rem;
+            position: relative;
+            padding-bottom: 0.5rem;
+        }
+
+        .section-title::after {
+            content: "";
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 48px;
+            height: 3px;
+            background: #0984e3;
+            border-radius: 2px;
+        }
+
+        .section p {
+            color: #555;
+            font-size: 1.05rem;
+            text-align: justify;
+        }
+
+        /* ===== Features / Stats Row ===== */
+        .stats {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 2rem;
+            margin-top: 4rem;
+            padding-top: 3rem;
+            border-top: 1px solid #e8e8e8;
+        }
+
+        .stat-item {
+            text-align: center;
+        }
+
+        .stat-item .number {
+            font-size: 2.25rem;
+            font-weight: 800;
+            color: #0984e3;
+        }
+
+        .stat-item .label {
+            font-size: 0.9rem;
+            color: #888;
+            margin-top: 0.25rem;
+        }
+
+        /* ===== Footer ===== */
+        .footer {
+            text-align: center;
+            padding: 2rem;
+            color: #aaa;
+            font-size: 0.85rem;
+            border-top: 1px solid #e8e8e8;
+            background: #ffffff;
+        }
+
+        /* ===== Responsive ===== */
+        @media (max-width: 768px) {
+            .hero h1 {
+                font-size: 2rem;
+            }
+
+            .hero p {
+                font-size: 1rem;
+            }
+
+            .navbar {
+                padding: 0 1rem;
+            }
+
+            .nav-links {
+                gap: 1rem;
+            }
+
+            .container {
+                padding: 2.5rem 1rem;
+            }
+
+            .section-title {
+                font-size: 1.4rem;
+            }
+
+            .section p {
+                font-size: 0.95rem;
+                text-align: left;
+            }
+
+            .stats {
+                grid-template-columns: 1fr;
+                gap: 1.5rem;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .hero {
+                padding: 3rem 1rem;
+            }
+
+            .hero h1 {
+                font-size: 1.6rem;
+            }
+
+            .nav-links {
+                gap: 0.75rem;
+                font-size: 0.85rem;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- 导航栏 -->
+    <nav class="navbar">
+        <a href="#" class="logo">Tech<span>Nova</span></a>
+        <ul class="nav-links">
+            <li><a href="#">Home</a></li>
+            <li><a href="#" class="active">About</a></li>
+            <li><a href="#">Services</a></li>
+            <li><a href="#">Contact</a></li>
+        </ul>
+    </nav>
+
+    <!-- Hero 区域 -->
+    <section class="hero">
+        <h1>About Us</h1>
+        <p>了解我们的故事、使命与团队</p>
+    </section>
+
+    <!-- 主要内容 -->
+    <main class="container">
+
+        <!-- 公司简介 -->
+        <article class="section">
+            <h2 class="section-title">公司简介</h2>
+            <p>
+                TechNova 是一家专注于企业级数字化转型的科技公司，成立于 2018 年，总部位于深圳。
+                我们致力于将人工智能、云计算与大数据技术深度融合，为金融、医疗、制造等行业的客户提供
+                安全、高效、可扩展的数字化解决方案。公司核心产品涵盖智能数据分析平台、自动化运维系统
+                以及低代码应用开发框架，已累计服务超过 200 家企业客户。我们始终坚持以技术创新为驱动，
+                以客户成功为导向，持续投入研发资源，积极探索前沿技术在实际业务场景中的落地应用。
+                未来，TechNova 将继续深耕行业数字化赛道，助力更多企业实现智能化升级与可持续发展。
+            </p>
+        </article>
+
+        <!-- 团队介绍 -->
+        <article class="section">
+            <h2 class="section-title">团队介绍</h2>
+            <p>
+                TechNova 拥有一支充满激情与创造力的核心团队，成员来自全球顶尖科技公司与一流高校。
+                我们的工程师团队在分布式系统、机器学习、数据安全等领域拥有丰富的实战经验，
+                核心成员平均从业年限超过十年。产品与设计团队秉持"用户第一"的理念，致力于打造
+                直观、高效的产品体验。我们倡导开放、协作、持续学习的工程师文化，鼓励跨部门交流
+                与知识分享。无论是技术攻关还是产品迭代，团队成员始终以严谨的态度和创新的思维
+                面对每一个挑战。我们相信，优秀的团队是交付卓越产品的基石，也是 TechNova 持续成长的核心动力。
+            </p>
+        </article>
+
+        <!-- 数据亮点 -->
+        <div class="stats">
+            <div class="stat-item">
+                <div class="number">200+</div>
+                <div class="label">企业客户</div>
+            </div>
+            <div class="stat-item">
+                <div class="number">50+</div>
+                <div class="label">团队核心成员</div>
+            </div>
+            <div class="stat-item">
+                <div class="number">8</div>
+                <div class="label">年行业深耕</div>
+            </div>
+        </div>
+
+    </main>
+
+    <!-- 页脚 -->
+    <footer class="footer">
+        <p>&copy; 2026 TechNova. All rights reserved.</p>
+    </footer>
+
+</body>
+</html>
