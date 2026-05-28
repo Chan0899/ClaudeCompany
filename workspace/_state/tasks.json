@@ -1,9 +1,9 @@
 [
   {
-    "id": "5ae79f7c",
-    "description": "创建 About 页面 (about.html)，包含以下内容：1) 页面标题 \"About Us\"；2) \"公司简介\" 段落 — 写一段通用的科技公司简介文字（约100-150字）；3) \"团队介绍\" 段落 — 写一段团队介绍文字（约100-150字）。要求：响应式布局，风格简洁专业，纯HTML/CSS实现，无需JS框架。",
+    "id": "89b6c475",
+    "description": "创建一个About页面（about.html），包含两段内容：1）公司简介（公司名称、愿景、核心业务等文字段落）；2）团队介绍（团队成员构成、技术栈、团队文化等文字段落）。页面要求美观响应式，使用语义化HTML5标签，CSS采用Flexbox/Grid布局，适配移动端和桌面端。文件放在 templates/about.html 或 frontend/ 目录下，保持与现有项目风格一致。",
     "assigned_role": "frontend_dev",
-    "parent_id": "37608511",
+    "parent_id": "353f17cf",
     "depends_on": [],
     "status": "done",
     "result": {
@@ -13,16 +13,16 @@
       "role": "frontend_dev"
     },
     "reject_reason": null,
-    "created_at": 1779822050.054888,
-    "completed_at": 1779822083.9231887
+    "created_at": 1779961058.202102,
+    "completed_at": 1779961159.7613556
   },
   {
-    "id": "37608511",
+    "id": "353f17cf",
     "description": "你好",
     "assigned_role": null,
     "parent_id": null,
     "depends_on": [],
-    "status": "approved",
+    "status": "pending_approval",
     "result": {
       "frontend_dev": {
         "files": [
@@ -32,7 +32,7 @@
       }
     },
     "reject_reason": null,
-    "created_at": 1779822050.0488875,
+    "created_at": 1779961058.194105,
     "completed_at": null
   }
 ]

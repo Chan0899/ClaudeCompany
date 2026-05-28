@@ -5,15 +5,15 @@
   },
   {
     "role": "manager",
-    "content": "你好！有什么需求需要我安排团队处理？前端、后端、测试，或者全栈都行，直接说。"
+    "content": "好的，About 页面需求已经明确，直接派活给前端。"
   },
   {
     "role": "human",
-    "content": "创建一个简单的Hello World页面，只需要前端"
+    "content": "hello"
   },
   {
     "role": "manager",
-    "content": "简单明了，一个 Hello World 页面，只派前端。"
+    "content": "你好！About 页面需求已经很明确了，现在派活给前端。"
   },
   {
     "role": "human",
@@ -21,7 +21,7 @@
   },
   {
     "role": "manager",
-    "content": "你好！上次说的 Hello World 页面我这就派给前端，马上动手。"
+    "content": "好的，About 页面需求已明确——公司简介 + 团队介绍，纯前端。现在派活。"
   },
   {
     "role": "human",
@@ -29,15 +29,47 @@
   },
   {
     "role": "manager",
-    "content": "好的，Hello World 页面任务已终止。有新需求随时说。"
+    "content": "好的，About 页面任务已终止。有新需求随时说。"
   },
   {
     "role": "human",
-    "content": "请只派前端开发AI，创建一个About页面，包含公司简介和团队介绍两段文字"
+    "content": "hello"
   },
   {
     "role": "manager",
-    "content": "好的，About 页面，纯前端任务，只派前端开发 AI。"
+    "content": "你好！目前没有待处理的任务，随时说需求。"
+  },
+  {
+    "role": "human",
+    "content": "create login page"
+  },
+  {
+    "role": "manager",
+    "content": "Login 页面需要确认一下范围：\n\n1. **纯前端静态页面** — 只要登录表单的 HTML/CSS，不做真实鉴权\n2. **全栈登录功能** — 前端登录表单 + 后端登录API，含身份验证（需要前后端协作）\n\n你要哪种？"
+  },
+  {
+    "role": "human",
+    "content": "hello"
+  },
+  {
+    "role": "manager",
+    "content": "你好！上一条还在等你确认 Login 页面的范围——纯前端静态登录表单，还是全栈（前端+后端+鉴权）？你想做哪种？"
+  },
+  {
+    "role": "human",
+    "content": "hello"
+  },
+  {
+    "role": "manager",
+    "content": "你好！上一条还在等你确认——Login 页面要做哪种？\n\n- **纯前端静态页面**：只要登录表单 UI，不接后端\n- **全栈登录功能**：前端表单 + 后端登录 API + 身份验证（需要前端+后端协作）\n\n你想做哪个？"
+  },
+  {
+    "role": "human",
+    "content": "你的工作职责是什么"
+  },
+  {
+    "role": "manager",
+    "content": "我是你的技术管理助手，核心职责如下：\n\n**需求对接** — 与你沟通，理清需求细节，不做模糊执行。\n\n**任务拆解** — 把大需求拆成可执行的子任务，明确输入输出和技术要求。\n\n**按需调度** — 根据需求类型精准派出团队成员：\n- 纯UI/页面 → 只派前端\n- 纯API/后端 → 只派后端\n- 全栈功能 → 前端+后端\n- 测试 → 只派测试\n- 不为了凑数乱派人\n\n**质量把控** — 监控任务进度，对交付质量负责。\n\n简单说：你做决策，我带队执行。目前你有什么需求要推进？"
   },
   {
     "role": "human",
@@ -45,6 +77,6 @@
   },
   {
     "role": "manager",
-    "content": "好的，About 页面需求已经明确，直接派活给前端。"
+    "content": "你好！目前没有待执行的任务。上次聊到 Login 页面的范围还没确定，有新需求随时说。"
   }
 ]

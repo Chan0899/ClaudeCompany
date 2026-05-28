@@ -1,12 +1,22 @@
 """
 多Claude协同系统 - 配置文件
+
+模块1: 环境适配 & Claude全局模型兼容升级
+  - 新增 .env 环境变量加载
+  - 新增 CLAUDE_MODEL 配置
+  - 新增 CrewAI 配置项
+  - 保留所有原有配置不变
 """
 import os
+from dotenv import load_dotenv
 
-# 服务配置
-HOST = "127.0.0.1"
-PORT = 5000
-DEBUG = True
+# 加载 .env 文件 (优先级: 环境变量 > .env > 默认值)
+load_dotenv()
+
+# 服务配置 (可通过 .env 覆盖)
+HOST = os.getenv("FLASK_HOST", "127.0.0.1")
+PORT = int(os.getenv("FLASK_PORT", "5000"))
+DEBUG = os.getenv("FLASK_DEBUG", "true").lower() == "true"
 
 # 工作区路径 (相对于项目根目录)
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
@@ -49,7 +59,7 @@ AI_ROLES = {
 #   simulated - Python线程模拟AI工作 (无需Claude CLI)
 #   claude    - 启动真实Claude终端窗口, 每个AI角色一个窗口
 # ============================================================
-AI_MODE = "claude"
+AI_MODE = os.getenv("AI_MODE", "claude")
 
 # Claude终端模式下的角色系统提示词 (追加到每个AI的system prompt)
 ROLE_SYSTEM_PROMPTS = {
@@ -96,7 +106,14 @@ MANAGER_SYSTEM_PROMPT = (
     ']}\n'
     "<<<END>>>\n\n"
     "每个任务description要具体、可执行, 包含技术要求和文件命名。"
-    "未达到派活条件时继续对话即可, 不要输出JSON。"
+    "未达到派活条件时继续对话即可, 不要输出JSON。\n\n"
+    "关于执行反馈:\n"
+    "- 对话中可能出现以「【系统通知 - 任务执行反馈】」开头的消息, "
+    "这是系统自动推送的任务执行状态。\n"
+    "- 任务完成时: 确认结果, 必要时通知人类负责人。\n"
+    "- 任务阻塞时: 考虑是否可以调整计划 (如取消不必要的依赖)。\n"
+    "- 任务重试/失败时: 决定是否重新分配或使用不同方案。\n"
+    "- 在非任务对话中不要主动提及反馈, 除非人类询问或有紧急更新。"
 )
 
 # 模拟AI工作延迟 (秒) — 仅在 simulated 模式下生效
@@ -104,3 +121,13 @@ AI_THINKING_MIN = 1.0
 AI_THINKING_MAX = 2.5
 AI_CODING_MIN = 2.0
 AI_CODING_MAX = 4.0
+
+# ============================================================
+# 模块1新增: Claude模型 & CrewAI配置
+# ============================================================
+
+# Claude Code 模型版本 (从 .env 读取)
+CLAUDE_MODEL = os.getenv("CLAUDE_MODEL", "claude-sonnet-4-6")
+
+# CrewAI 执行模式 (后续模块2-3使用)
+CREWAI_PROCESS = os.getenv("CREWAI_PROCESS", "sequential")

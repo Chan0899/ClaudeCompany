@@ -1,16 +1,19 @@
 """
-后台Claude执行器 - 无弹窗, subprocess静默运行, 输出通过SSE实时推送
+后台Claude执行器 - 通过统一 LLM Client 调用, 输出通过SSE实时推送
+
+模块1适配: 替换 subprocess.Popen 为 llm_client.chat_stream()
 
 Fix 1: 注入公告板上下文, AI间可协作
 Fix 3: 测试AI拿到实际代码后针对性测试
 """
 import os
-import subprocess
 import threading
 from config import WORKSPACE_DIR, ROLE_SYSTEM_PROMPTS
 from core.event_bus import event_bus
 from core.bulletin_board import board, BOARD_FILE
 from core.workspace import workspace
+from core.llm_client import llm_client
+from core.memory_manager import get_memory_manager
 
 
 def run_claude_worker(
@@ -105,19 +108,6 @@ def run_claude_worker(
                    f"工作目录: {role_dir}")
 
         try:
-            proc = subprocess.Popen(
-                ["claude", "-p", prompt,
-                 "--append-system-prompt", system_prompt,
-                 "--dangerously-skip-permissions",
-                 "--allowedTools", "Read,Write,Edit,Bash,Glob,Grep"],
-                stdout=subprocess.PIPE,
-                stderr=subprocess.PIPE,
-                text=True,
-                encoding="utf-8",
-                cwd=role_dir,
-                bufsize=1
-            )
-
             event_bus.publish("ai_status", {
                 "ai_id": role_id,
                 "ai_name": role_name,
@@ -125,27 +115,46 @@ def run_claude_worker(
                 "current_task": {"description": task_description}
             })
 
-            output_lines = []
-            for line in iter(proc.stdout.readline, ""):
-                if line.strip():
-                    output_lines.append(line.strip())
-                    event_bus.publish("worker_output", {
+            # 模块5: 加载记忆上下文
+            memory_mgr = get_memory_manager(role_id)
+            memory_context = memory_mgr.load_context()
+            memory_mgr.remember(f"开始执行任务: {task_description[:80]}", "任务系统")
+
+            # 使用统一 LLM Client 流式调用 Claude
+            result = llm_client.chat_stream(
+                prompt=prompt,
+                system_prompt=system_prompt,
+                allowed_tools=["Read", "Write", "Edit", "Bash", "Glob", "Grep"],
+                cwd=role_dir,
+                timeout=300,
+                memory_context=memory_context,
+                on_line=lambda line: event_bus.publish("worker_output", {
+                    "ai_id": role_id,
+                    "ai_name": role_name,
+                    "line": line[:200]
+                }),
+                on_error=lambda err: (
+                    event_bus.publish("log", {
                         "ai_id": role_id,
                         "ai_name": role_name,
-                        "line": line.strip()[:200]
-                    })
-
-            proc.wait(timeout=300)
-            stderr_text = proc.stderr.read()
+                        "message": f"执行异常: {err}"
+                    }),
+                    memory_mgr.remember(f"执行错误: {err}", "系统", mtype="error")
+                )
+            )
 
             new_files = _detect_new_files(role_dir)
 
-            if proc.returncode == 0:
+            if result["success"]:
                 status = "done"
                 msg = f"任务完成! 产出: {', '.join(new_files) if new_files else '无新文件'}"
             else:
                 status = "error"
-                msg = f"执行异常 (code={proc.returncode}): {stderr_text[:100]}"
+                msg = f"执行异常: {result.get('error', '未知错误')[:100]}"
+
+            # 模块5: 任务完成, 归档记忆
+            memory_mgr.remember(f"任务结果: {msg}", "任务系统", mtype="info" if status == "done" else "error")
+            memory_mgr.complete_task(task_summary=f"{task_description[:60]} → {msg}")
 
             event_bus.publish("ai_status", {
                 "ai_id": role_id,
@@ -173,16 +182,6 @@ def run_claude_worker(
                 "role": role_id
             })
 
-        except subprocess.TimeoutExpired:
-            proc.kill()
-            event_bus.publish("ai_status", {
-                "ai_id": role_id, "ai_name": role_name,
-                "status": "error", "current_task": None
-            })
-            event_bus.publish("log", {
-                "ai_id": role_id, "ai_name": role_name,
-                "message": "任务超时(300秒), 已终止"
-            })
         except Exception as e:
             event_bus.publish("ai_status", {
                 "ai_id": role_id, "ai_name": role_name,

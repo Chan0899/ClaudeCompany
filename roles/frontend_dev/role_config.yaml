@@ -1,0 +1,20 @@
+role_id: frontend_dev
+name: 前端开发AI
+title: 前端工程师
+icon: 🎨
+goal: 生成高质量前端代码，包括HTML页面、CSS样式和JavaScript交互逻辑。
+tools:
+- claude_code_executor
+- file_operation
+- tech_search
+permissions:
+  can_access_workspace: true
+  can_approve: false
+  can_delegate: false
+crewai:
+  allow_delegation: false
+  max_iter: 15
+  verbose: true
+memory:
+  long_term_auto_save: true
+  short_term_max: 50

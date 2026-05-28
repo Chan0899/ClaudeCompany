@@ -1,0 +1,201 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>关于我们 - 多Claude协同系统</title>
+    <link rel="stylesheet" href="/static/css/style.css">
+    <style>
+        .about-container {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 40px 24px;
+            flex: 1;
+            overflow-y: auto;
+        }
+
+        .about-hero {
+            text-align: center;
+            padding: 32px 0 40px;
+            border-bottom: 1px solid var(--border);
+            margin-bottom: 36px;
+        }
+
+        .about-hero .hero-icon {
+            font-size: 48px;
+            margin-bottom: 12px;
+        }
+
+        .about-hero h1 {
+            font-size: 24px;
+            font-weight: 700;
+            color: var(--text-primary);
+            margin-bottom: 8px;
+        }
+
+        .about-hero .subtitle {
+            font-size: 14px;
+            color: var(--text-muted);
+        }
+
+        .about-section {
+            margin-bottom: 36px;
+        }
+
+        .about-section h2 {
+            font-size: 18px;
+            font-weight: 600;
+            color: var(--accent-blue);
+            margin-bottom: 14px;
+            padding-left: 12px;
+            border-left: 3px solid var(--accent-blue);
+        }
+
+        .about-section p {
+            font-size: 14px;
+            line-height: 1.8;
+            color: var(--text-secondary);
+            text-indent: 2em;
+        }
+
+        .about-section p + p {
+            margin-top: 10px;
+        }
+
+        .team-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+            gap: 14px;
+            margin-top: 16px;
+        }
+
+        .team-card {
+            background: var(--bg-tertiary);
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            padding: 18px 14px;
+            text-align: center;
+            transition: border-color 0.2s;
+        }
+
+        .team-card:hover {
+            border-color: var(--accent-blue);
+        }
+
+        .team-card .role-icon {
+            font-size: 28px;
+            margin-bottom: 8px;
+        }
+
+        .team-card .role-name {
+            font-size: 13px;
+            font-weight: 600;
+            color: var(--text-primary);
+        }
+
+        .team-card .role-desc {
+            font-size: 11px;
+            color: var(--text-muted);
+            margin-top: 4px;
+        }
+
+        .back-link {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            color: var(--accent-blue);
+            text-decoration: none;
+            font-size: 13px;
+            padding: 8px 16px;
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            transition: all 0.2s;
+            margin-bottom: 20px;
+        }
+
+        .back-link:hover {
+            background: var(--bg-tertiary);
+            border-color: var(--accent-blue);
+        }
+
+        @media (max-width: 600px) {
+            .about-container {
+                padding: 20px 16px;
+            }
+            .team-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+    </style>
+</head>
+<body>
+
+<header class="topbar">
+    <div class="topbar-title">
+        <span class="logo-icon">🏢</span>
+        <h1>多Claude协同系统 Demo</h1>
+        <span class="badge">v1.0</span>
+    </div>
+    <div class="topbar-actions">
+        <a href="/" class="back-link">← 返回首页</a>
+    </div>
+</header>
+
+<div class="about-container">
+
+    <div class="about-hero">
+        <div class="hero-icon">🤖</div>
+        <h1>关于我们</h1>
+        <p class="subtitle">可视化自进化多AI团队系统</p>
+    </div>
+
+    <div class="about-section">
+        <h2>公司简介</h2>
+        <p>
+            ClaudeCompany 是一家专注于AI多智能体协同工作的前沿技术公司。我们致力于打造新一代可视化自进化多AI团队系统，
+            通过创新的多智能体协同架构，将复杂软件工程任务自动拆解、智能分配给专业化AI角色，实现从需求输入到代码交付的全流程自动化。
+        </p>
+        <p>
+            我们的核心技术基于 Claude Code 深度集成与 CrewAI 标准化协作引擎，结合自研的六层架构体系——覆盖人类管控、
+            可视化交互、AI动态统筹、专业化执行集群、智能质控进化、统一资源持久化，为企业提供商用级的智能化研发管理解决方案。
+            目前我们的系统已支持管理AI、前端开发AI、后端开发AI、测试AI等多角色高效协同，显著提升软件研发效率与质量。
+        </p>
+    </div>
+
+    <div class="about-section">
+        <h2>团队介绍</h2>
+        <p>
+            我们的AI团队由多个专业化智能体组成，各司其职、紧密协作。管理AI担任统筹角色，负责需求分析、任务拆解与资源调度；
+            前端开发AI专注于HTML/CSS/JS，生成美观响应式用户界面；后端开发AI擅长Python/Flask，构建稳定可靠的RESTful API服务；
+            测试AI基于pytest编写高质量测试用例，保障代码质量。每个AI角色均绑定专属工具链，遵循专人专岗原则，
+            通过公告板实时通信、事件总线驱动协作，形成完整的前后端全栈开发闭环。
+        </p>
+
+        <div class="team-grid">
+            <div class="team-card" style="border-left: 3px solid var(--accent-purple);">
+                <div class="role-icon">🎯</div>
+                <div class="role-name">管理AI</div>
+                <div class="role-desc">需求分析 · 任务调度</div>
+            </div>
+            <div class="team-card" style="border-left: 3px solid var(--accent-blue);">
+                <div class="role-icon">🎨</div>
+                <div class="role-name">前端开发AI</div>
+                <div class="role-desc">HTML/CSS/JS · 响应式</div>
+            </div>
+            <div class="team-card" style="border-left: 3px solid var(--accent-green);">
+                <div class="role-icon">⚙️</div>
+                <div class="role-name">后端开发AI</div>
+                <div class="role-desc">Python/Flask · RESTful API</div>
+            </div>
+            <div class="team-card" style="border-left: 3px solid var(--accent-yellow);">
+                <div class="role-icon">🧪</div>
+                <div class="role-name">测试AI</div>
+                <div class="role-desc">pytest · 质量保障</div>
+            </div>
+        </div>
+    </div>
+
+</div>
+
+</body>
+</html>

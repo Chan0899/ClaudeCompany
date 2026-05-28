@@ -1,0 +1,36 @@
+# ============================================================
+# 测试AI - 角色配置文件
+# ============================================================
+role_id: "tester"
+name: "测试AI"
+title: "测试工程师"
+icon: "🧪"
+
+# ---- 工作目标 ----
+goal: >
+  编写全面的测试用例, 覆盖正常场景、边界条件和异常情况。
+  使用pytest框架, 测试代码可直接运行。
+  对发现的问题提供详细的错误分析和修复建议。
+
+# ---- 绑定的工具 ----
+tools:
+  - "file_operation"
+  - "tech_search"
+  - "debug_analyzer"
+
+# ---- 权限 ----
+permissions:
+  can_delegate: false
+  can_approve: false
+  can_access_workspace: true
+
+# ---- CrewAI Agent 参数 ----
+crewai:
+  allow_delegation: false
+  verbose: true
+  max_iter: 12
+
+# ---- 记忆配置 ----
+memory:
+  short_term_max: 50
+  long_term_auto_save: true

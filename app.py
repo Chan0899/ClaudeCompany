@@ -24,6 +24,9 @@ from core.manager_chat import manager_chat
 from core.background_worker import run_claude_worker
 from core.bulletin_board import board
 from core.persistence import persistence
+from core.data_store import data_store
+from core.dynamic_scheduler import scheduler
+from quality_evolve import quality_checker, conflict_resolver, evolver
 from roles.frontend_dev import FrontendDevAI
 from roles.backend_dev import BackendDevAI
 from roles.tester import TesterAI
@@ -109,18 +112,80 @@ def _on_worker_done_callback():
                 if data["type"] == "worker_done":
                     wdata = data["data"]
                     role = wdata["role"]
-                    # 更新对应子任务状态为 done
+                    status = wdata.get("status", "done")
+                    task_id = wdata.get("task_id", "")
+
+                    # 模块7: 标记角色完成, 释放负载
+                    scheduler.mark_finished(role)
+
+                    # 找到对应子任务
+                    found_tid = None
+                    found_parent = None
+                    found_desc = ""
                     for tid, task in list(task_manager.tasks.items()):
                         if (task.assigned_role == role and
                             task.status not in ("done", "approved", "rejected")):
-                            task_manager.update_status(tid, "done", {
-                                "files": wdata.get("files", []),
-                                "role": role
-                            })
-                            parent_id = task.parent_id
+                            found_tid = tid
+                            found_parent = task.parent_id
+                            found_desc = task.description
                             break
                     else:
                         continue
+
+                    # 状态处理: error → 自动重试
+                    if status == "error":
+                        if task_id and scheduler.should_retry(task_id):
+                            retry_count = scheduler.record_retry(task_id)
+                            retry_ctx = scheduler.get_retry_context(
+                                task_id,
+                                wdata.get("files", []) and str(wdata.get("files", [])) or ""
+                            )
+                            # 第6层: 反馈 — 通知管理AI正在重试
+                            scheduler.add_feedback("task_retrying", {
+                                "role": role,
+                                "description": found_desc,
+                                "retry_count": retry_count,
+                                "error": wdata.get("files", []) and str(wdata.get("files", [])) or "",
+                                "task_id": task_id,
+                            })
+                            event_bus.publish("log", {
+                                "ai_id": "scheduler", "ai_name": "调度器",
+                                "message": f"任务 [{task_id}] 失败, 自动重试 #{retry_count}"
+                            })
+                            run_claude_worker(
+                                role_id=role,
+                                role_name=ROLE_NAME_MAP.get(role, role),
+                                workspace_subdir=ROLE_DIR_MAP.get(role, role),
+                                task_description=found_desc,
+                                feature=f"重试#{retry_count}-任务ID:{task_id}",
+                                task_id=task_id,
+                                extra_context=retry_ctx
+                            )
+                            scheduler.mark_started(role)
+                            continue  # 跳过done标记, 等待重试结果
+                        else:
+                            # 重试耗尽 → 反馈给管理AI
+                            scheduler.add_feedback("task_failed", {
+                                "role": role,
+                                "description": found_desc,
+                                "retry_count": scheduler.get_retry_count(task_id),
+                                "task_id": task_id,
+                            })
+
+                    task_manager.update_status(found_tid, "done", {
+                        "files": wdata.get("files", []),
+                        "role": role
+                    })
+                    parent_id = found_parent
+
+                    # 第6层: 反馈 — 任务完成
+                    if status != "error":
+                        scheduler.add_feedback("task_done", {
+                            "role": role,
+                            "description": found_desc,
+                            "files": wdata.get("files", []),
+                            "task_id": found_tid,
+                        })
 
                     if not parent_id:
                         continue
@@ -138,6 +203,12 @@ def _on_worker_done_callback():
                         if all(d in _completed_roles.get(parent_id, set()) for d in deps):
                             # 所有依赖已满足, 启动此任务
                             _launch_single_worker(ptask, parent_id)
+                            # 第6层: 反馈 — 依赖就绪
+                            scheduler.add_feedback("dependency_resolved", {
+                                "role": ptask.get("role", ""),
+                                "description": ptask.get("description", ""),
+                                "depends_on": deps,
+                            })
                             event_bus.publish("log", {
                                 "ai_id": "manager", "ai_name": "管理AI",
                                 "message": f"依赖满足, 启动 {ROLE_NAME_MAP.get(ptask['role'], ptask['role'])} (等待了 {', '.join(deps)})"
@@ -160,6 +231,76 @@ def _on_worker_done_callback():
 _on_worker_done_callback()
 
 
+# 模块4: 数据持久层事件监听器 (自动记录工具调用、任务、错误、成果)
+def _init_data_store_listeners():
+    """后台监听 event_bus, 自动写入 SQLite 数据仓库"""
+    import threading
+    q = event_bus.subscribe()
+    def _listen():
+        while True:
+            try:
+                msg = q.get(timeout=2)
+                event = json.loads(msg)
+                etype = event.get("type", "")
+                edata = event.get("data", {})
+
+                # 全量事件流水
+                data_store.record_event(etype, edata)
+
+                # 工具调用 → tool_calls
+                if etype == "tool_call":
+                    data_store.record_tool_call(
+                        tool_name=edata.get("tool_name", ""),
+                        tool_category=edata.get("tool_category", ""),
+                        params=edata.get("params", {}),
+                        elapsed_ms=edata.get("elapsed", 0) * 1000,
+                        success=edata.get("success", True),
+                        error_msg=edata.get("error", "")
+                    )
+
+                # 任务 → task_records
+                elif etype == "task_created":
+                    data_store.record_task(
+                        task_id=edata.get("task_id", ""),
+                        task_desc=edata.get("description", "")
+                    )
+
+                elif etype in ("task_status", "subtask_created"):
+                    data_store.record_task(
+                        task_id=edata.get("task_id", ""),
+                        assigned_role=edata.get("assigned_role", ""),
+                        status=edata.get("status", ""),
+                        task_desc=edata.get("description", "")
+                    )
+
+                # 错误 → error_logs
+                elif etype == "log":
+                    msg_text = edata.get("message", "")
+                    if any(kw in msg_text for kw in ["error", "Error", "失败", "错误", "异常", "超时"]):
+                        data_store.record_error(
+                            source="agent",
+                            source_id=edata.get("ai_id", ""),
+                            error_message=msg_text
+                        )
+
+                # 项目交付 → project_artifacts
+                elif etype == "project_delivered":
+                    data_store.record_artifact(
+                        project_name=edata.get("project_name", ""),
+                        task_id=edata.get("task_id", ""),
+                        file_count=edata.get("file_count", 0),
+                        file_list=edata.get("files", [])
+                    )
+
+            except Exception:
+                pass
+    t = threading.Thread(target=_listen, daemon=True)
+    t.start()
+
+_init_data_store_listeners()
+print(f"✓ 数据持久层已就绪 (SQLite: {data_store.get_overview()['db_size_mb']}MB)")
+
+
 # ============================================================
 # API路由
 # ============================================================
@@ -168,6 +309,12 @@ _on_worker_done_callback()
 def index():
     """主页面"""
     return render_template('index.html')
+
+
+@app.route('/about')
+def about():
+    """关于页面"""
+    return render_template('about.html')
 
 
 @app.route('/api/status')
@@ -324,22 +471,32 @@ def _spawn_workers(feature: str, tasks: list[dict]):
             board.clear()
             board.post("manager", "管理AI", f"=== 新项目: {feature} ===\n请各AI在下方留言协调工作")
 
-            # Phase 1: 无依赖的任务立即启动
-            phase1 = [t for t in tasks if not t.get("depends_on")]
-            phase2 = [t for t in tasks if t.get("depends_on")]
+            # 模块7: 第4层 — 任务排序 + 依赖分析
+            # 注意: can_launch 校验已在管理AI对话第3层 (validate_delegation) 完成
+            ordered_tasks = scheduler.optimize_order(tasks)
+            phase1 = [t for t in ordered_tasks if not t.get("depends_on")]
+            phase2 = [t for t in ordered_tasks if t.get("depends_on")]
 
             if not phase1 and phase2:
                 phase1 = phase2
                 phase2 = []
 
             for task in phase1:
+                role_id = task.get("role", "")
+                scheduler.mark_started(role_id)
                 _launch_single_worker(task, parent_id)
 
-            # Phase 2: 存储依赖任务, 等待依赖完成
+            # Phase 2: 存储依赖任务, 等待依赖角色完成
             if phase2:
                 _pending_dependent_tasks[parent_id] = phase2
                 for ptask in phase2:
                     deps = ptask.get("depends_on", [])
+                    scheduler.add_feedback("dependency_blocked", {
+                        "role": ptask.get("role", ""),
+                        "description": ptask.get("description", ""),
+                        "depends_on": deps,
+                        "parent_id": parent_id,
+                    })
                     event_bus.publish("log", {
                         "ai_id": "manager", "ai_name": "管理AI",
                         "message": f"待启动: {ROLE_NAME_MAP.get(ptask['role'], ptask['role'])} (依赖: {', '.join(deps)})"
@@ -387,18 +544,26 @@ def approve_task(task_id):
     if not task:
         return jsonify({"code": 404, "message": "任务不存在"}), 404
 
-    # 冲突检测 (Fix 6)
-    conflicts = board.detect_conflicts()
-    if conflicts:
+    # 模块8: 质控检查
+    qc_report = quality_checker.run_all_checks()
+    if not qc_report["passed"]:
         event_bus.publish("log", {
             "ai_id": "manager", "ai_name": "管理AI",
-            "message": f"冲突检测: 发现 {len(conflicts)} 个潜在问题"
+            "message": f"质控检查: {qc_report['issue_count']}个问题 ({qc_report['high_severity']}个高危)"
         })
-        for c in conflicts:
+        for issue in qc_report["issues"][:5]:
             event_bus.publish("log", {
                 "ai_id": "manager", "ai_name": "管理AI",
-                "message": f"  ⚠ [{c['type']}] {c['message']}"
+                "message": f"  [{issue.get('severity','?')}] {issue.get('message','')[:80]}"
             })
+
+    # 模块8: 冲突调解
+    cr_result = conflict_resolver.auto_resolve()
+    if cr_result["resolved"] > 0 or cr_result["skipped"] > 0:
+        event_bus.publish("log", {
+            "ai_id": "manager", "ai_name": "管理AI",
+            "message": f"冲突调解: 已自动解决{cr_result['resolved']}个, 需人工{cr_result['skipped']}个"
+        })
 
     task_manager.approve_task(task_id)
     manager_ai._log(f"任务 [{task_id}] 已通过人类审批 ✓")
@@ -415,8 +580,20 @@ def approve_task(task_id):
     event_bus.publish("project_delivered", {
         "task_id": task_id,
         "project_name": project_name,
-        "project_dir": project_dir
+        "project_dir": project_dir,
+        "file_count": len(qc_report.get("checks", {}).get("files_exist", [])),
     })
+
+    # 模块8: 自进化 - 项目复盘 + 经验沉淀
+    try:
+        retro = evolver.retrospective(project_name)
+        lessons_written = evolver.auto_write_lessons()
+        event_bus.publish("log", {
+            "ai_id": "evolver", "ai_name": "自进化引擎",
+            "message": f"经验沉淀: {lessons_written}条 | 复盘报告已生成"
+        })
+    except Exception:
+        pass
 
     _save_tasks()
 
@@ -516,6 +693,232 @@ def reset_system():
 
     event_bus.publish("system_reset", {"message": "系统已重置"})
     return jsonify({"code": 200, "message": "系统已重置"})
+
+
+# ============================================================
+# 模块9: 可视化 & 管控层 - 新增API
+# ============================================================
+
+@app.route('/api/roles')
+def get_roles():
+    """获取所有角色配置"""
+    try:
+        from crew_adapter.agent_factory import agent_factory
+        configs = agent_factory.list_all()
+        return jsonify({"code": 200, "data": configs})
+    except Exception as e:
+        return jsonify({"code": 500, "message": str(e)}), 500
+
+
+@app.route('/api/roles/<role_id>')
+def get_role_detail(role_id):
+    """获取单个角色的完整配置 (含完整claude.md人设手册)"""
+    try:
+        from crew_adapter.agent_factory import agent_factory
+        config = agent_factory.get_agent_config(role_id)
+        if not config:
+            return jsonify({"code": 404, "message": f"角色 '{role_id}' 不存在"}), 404
+        # 附加完整claude.md (get_agent_config只返回300字预览)
+        claude_md = agent_factory.load_claude_md(role_id)
+        config["claude_md"] = claude_md
+        config["claude_md_length"] = len(claude_md)
+        return jsonify({"code": 200, "data": config})
+    except Exception as e:
+        return jsonify({"code": 500, "message": str(e)}), 500
+
+
+@app.route('/api/roles/<role_id>/config', methods=['PUT'])
+def update_role_config(role_id):
+    """保存角色配置 (仅白名单字段可写)"""
+    try:
+        from crew_adapter.agent_factory import agent_factory
+        data = request.get_json()
+        if not data:
+            return jsonify({"code": 400, "message": "请求体为空"}), 400
+        ok, msg = agent_factory.save_role_config(role_id, data)
+        return jsonify({"code": 200 if ok else 400, "message": msg})
+    except Exception as e:
+        return jsonify({"code": 500, "message": str(e)}), 500
+
+
+@app.route('/api/roles/<role_id>/handbook', methods=['PUT'])
+def update_role_handbook(role_id):
+    """保存角色人设手册 (claude.md)"""
+    try:
+        from crew_adapter.agent_factory import agent_factory
+        data = request.get_json()
+        if not data or "content" not in data:
+            return jsonify({"code": 400, "message": "缺少 content 字段"}), 400
+        ok, msg = agent_factory.save_claude_md(role_id, data["content"])
+        return jsonify({"code": 200 if ok else 400, "message": msg})
+    except Exception as e:
+        return jsonify({"code": 500, "message": str(e)}), 500
+
+
+@app.route('/api/tools')
+def get_tools():
+    """获取所有可用工具列表 (供角色配置工具绑定编辑器)"""
+    try:
+        from tools.registry import tool_registry
+        tools = tool_registry.list_all()
+        return jsonify({"code": 200, "data": tools})
+    except Exception as e:
+        return jsonify({"code": 500, "message": str(e)}), 500
+
+
+@app.route('/api/memories/<role_id>/short-term', methods=['POST'])
+def add_short_term_memory(role_id):
+    """添加一条短期记忆"""
+    try:
+        from core.memory_manager import get_memory_manager
+        data = request.get_json() or {}
+        content = data.get("content", "").strip()
+        if not content:
+            return jsonify({"code": 400, "message": "content 不能为空"}), 400
+        mm = get_memory_manager(role_id)
+        mm.remember(content, data.get("source", "human"), data.get("type", "info"))
+        return jsonify({"code": 200, "message": "已添加"})
+    except Exception as e:
+        return jsonify({"code": 500, "message": str(e)}), 500
+
+
+@app.route('/api/memories/<role_id>/short-term', methods=['DELETE'])
+def clear_short_term_memory(role_id):
+    """清空角色短期记忆"""
+    try:
+        from core.memory_manager import get_memory_manager
+        mm = get_memory_manager(role_id)
+        mm.short.clear()
+        return jsonify({"code": 200, "message": "已清空"})
+    except Exception as e:
+        return jsonify({"code": 500, "message": str(e)}), 500
+
+
+@app.route('/api/memories/<role_id>/long-term', methods=['PUT'])
+def update_long_term_memory(role_id):
+    """保存角色长期记忆 (覆盖写入)"""
+    try:
+        from core.memory_manager import get_memory_manager
+        data = request.get_json()
+        if not data or "content" not in data:
+            return jsonify({"code": 400, "message": "缺少 content 字段"}), 400
+        mm = get_memory_manager(role_id)
+        mm.long._write_file(data["content"])
+        return jsonify({"code": 200, "message": "已保存"})
+    except Exception as e:
+        return jsonify({"code": 500, "message": str(e)}), 500
+
+
+@app.route('/api/memories/<role_id>')
+def get_memories(role_id):
+    """获取指定角色的记忆内容 (短期+长期)"""
+    try:
+        from core.memory_manager import get_memory_manager, TeamMemory
+        mm = get_memory_manager(role_id)
+        short = mm.short.load()
+        long_text = mm.long.load()
+        team = TeamMemory().load_summary()
+
+        return jsonify({
+            "code": 200,
+            "data": {
+                "role_id": role_id,
+                "short_term": short,
+                "short_count": len(short),
+                "long_term": long_text[:5000],
+                "long_length": len(long_text),
+                "team_memory": team[:3000],
+            }
+        })
+    except Exception as e:
+        return jsonify({"code": 500, "message": str(e)}), 500
+
+
+@app.route('/api/tool-logs')
+def get_tool_logs():
+    """获取工具调用日志"""
+    try:
+        from core.data_store import data_store
+        limit = request.args.get("limit", 20, type=int)
+        stats = data_store.query_tool_stats(recent_days=7)
+        return jsonify({"code": 200, "data": {"stats": stats, "limit": limit}})
+    except Exception as e:
+        return jsonify({"code": 500, "message": str(e)}), 500
+
+
+@app.route('/api/errors')
+def get_errors():
+    """获取最近错误日志"""
+    try:
+        from core.data_store import data_store
+        limit = request.args.get("limit", 20, type=int)
+        errors = data_store.query_errors(limit=limit)
+        return jsonify({"code": 200, "data": errors})
+    except Exception as e:
+        return jsonify({"code": 500, "message": str(e)}), 500
+
+
+@app.route('/api/system/overview')
+def get_system_overview():
+    """系统仪表盘概览 (含任务流水线)"""
+    try:
+        from core.data_store import data_store
+        from core.memory_manager import TeamMemory
+        from core.dynamic_scheduler import scheduler
+
+        db_overview = data_store.get_overview()
+        active_roles = scheduler.active_roles
+        memory_len = len(TeamMemory().load())
+
+        # 任务流水线: 按角色统计各状态任务数
+        pipeline = {}
+        for tid, task in task_manager.tasks.items():
+            role = getattr(task, "assigned_role", None) or "unassigned"
+            if role not in pipeline:
+                pipeline[role] = {"active": 0, "completed": 0, "pending_approval": 0, "errors": 0}
+            status = task.status
+            if status in ("in_progress", "assigned"):
+                pipeline[role]["active"] += 1
+            elif status in ("done", "approved"):
+                pipeline[role]["completed"] += 1
+            elif status == "pending_approval":
+                pipeline[role]["pending_approval"] += 1
+            elif status == "rejected":
+                pipeline[role]["errors"] += 1
+
+        # 统计待审批总数
+        pending_total = sum(
+            1 for t in task_manager.tasks.values()
+            if getattr(t, "status", "") == "pending_approval"
+        )
+
+        # 待启动队列深度
+        queue_depth = sum(len(v) for v in _pending_dependent_tasks.values())
+
+        return jsonify({
+            "code": 200,
+            "data": {
+                "database": db_overview,
+                "active_tasks": active_roles,
+                "team_memory_chars": memory_len,
+                "mode": AI_MODE,
+                "task_pipeline": pipeline,
+                "pending_approval_total": pending_total,
+                "queue_depth": queue_depth,
+            }
+        })
+    except Exception as e:
+        return jsonify({"code": 500, "message": str(e)}), 500
+
+
+@app.route('/api/task/<task_id>/stop', methods=['POST'])
+def stop_task(task_id):
+    """强制停止任务"""
+    from human_control.approval import human_approval
+    data = request.get_json() or {}
+    reason = data.get("reason", "人工停止")
+    result = human_approval.stop_task(task_id, reason)
+    return jsonify({"code": 200 if result["stopped"] else 404, "data": result})
 
 
 # ============================================================

@@ -1,0 +1,62 @@
+# ============================================================
+# 多Claude协同系统 - 全局配置文件 (YAML)
+# 模块1: 环境适配 & 全局配置改造
+# ============================================================
+# 说明: 此文件为全局非敏感配置, 密钥信息请放入 .env
+
+# --- 服务配置 ---
+server:
+  host: "127.0.0.1"
+  port: 5000
+  debug: true
+
+# --- Claude 模型配置 ---
+claude:
+  model: "claude-sonnet-4-6"
+  # 运行模式: simulated | claude
+  mode: "claude"
+
+# --- CrewAI 配置 ---
+crewai:
+  # 执行模式: sequential | parallel
+  process: "sequential"
+  verbose: true
+
+# --- 工作区配置 ---
+workspace:
+  # 工作区根目录 (相对于项目根目录)
+  dir: "workspace"
+  # 角色工作子目录
+  role_subdirs:
+    frontend_dev: "frontend"
+    backend_dev: "backend"
+    tester: "tests"
+
+# --- 角色注册表 (声明有哪些员工, 详细配置在 roles/<id>/role_config.yaml) ---
+roles:
+  - id: "manager"
+    name: "管理AI"
+    dir: "manager"
+  - id: "frontend_dev"
+    name: "前端开发AI"
+    dir: "frontend_dev"
+  - id: "backend_dev"
+    name: "后端开发AI"
+    dir: "backend_dev"
+  - id: "tester"
+    name: "测试AI"
+    dir: "tester"
+
+# --- 模拟模式延迟配置 (仅在 simulated 模式下生效) ---
+simulated:
+  thinking_min: 1.0
+  thinking_max: 2.5
+  coding_min: 2.0
+  coding_max: 4.0
+
+# --- 持久化配置 ---
+persistence:
+  # SQLite 数据库路径 (相对于 workspace/_state/)
+  db_file: "data.db"
+  # JSON 状态文件目录
+  state_dir: "_state"
